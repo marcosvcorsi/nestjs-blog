@@ -13,7 +13,7 @@ async function bootstrap() {
 
   const options = new DocumentBuilder()
     .setTitle('Posts')
-    .setDescription('API CRUD for posts from users')
+    .setDescription('API User Blog')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

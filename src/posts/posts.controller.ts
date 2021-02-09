@@ -12,10 +12,17 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiNoContentResponse,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { CreatePostDto } from './dto/create-post.dto';
+import { PostDto } from './dto/post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Post as PostEntity } from './post.entity';
 import { PostsService } from './posts.service';
 
 @UseGuards(AuthGuard('jwt'))
@@ -26,22 +33,27 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Get()
-  async findAll(@Request() request): Promise<PostEntity[]> {
+  @ApiOkResponse({
+    schema: { type: 'array', items: { $ref: getSchemaPath(PostDto) } },
+  })
+  async findAll(@Request() request): Promise<PostDto[]> {
     const { userId } = request.user;
 
     return this.postsService.findAllByUser(userId);
   }
 
   @Get('/:id')
-  async findById(@Param('id') id: number): Promise<PostEntity> {
+  @ApiOkResponse({ type: PostDto })
+  async findById(@Param('id') id: number): Promise<PostDto> {
     return this.postsService.findById(id);
   }
 
   @Post()
+  @ApiCreatedResponse({ type: PostDto })
   async create(
     @Body() createPostDto: CreatePostDto,
     @Request() request,
-  ): Promise<PostEntity> {
+  ): Promise<PostDto> {
     const { userId } = request.user;
 
     return this.postsService.create(createPostDto, userId);
@@ -49,6 +61,7 @@ export class PostsController {
 
   @Put('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
   async update(
     @Param('id') id: number,
     @Body() updatePostDto: UpdatePostDto,
@@ -58,6 +71,7 @@ export class PostsController {
 
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
   async delete(@Param('id') id: number) {
     await this.postsService.delete(id);
   }
